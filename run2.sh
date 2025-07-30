@@ -1,3 +1,0 @@
-CUDA_VISIBLE_DEVICES=4 python train_matfl.py -net sam2 -exp_name MaTFL -sam_ckpt ./checkpoints/sam2_hiera_small.pt -sam_config sam2_hiera_s_dep -image_size 512 -val_freq 1 -prompt bbox -prompt_freq 2 -Layers both -num_nets 5
-CUDA_VISIBLE_DEVICES=5 python train_fedhca.py -net sam2 -exp_name FedHCA -sam_ckpt ./checkpoints/sam2_hiera_small.pt -sam_config sam2_hiera_s_dep -image_size 512 -val_freq 1 -prompt bbox -prompt_freq 2 -Layers both -num_nets 5
-CUDA_VISIBLE_DEVICES=5 python train_flas.py -net sam2 -exp_name FedProx -sam_ckpt ./checkpoints/sam2_hiera_small.pt -sam_config sam2_hiera_s_dep -image_size 512 -val_freq 1 -prompt bbox -prompt_freq 2 -Layers both -num_nets 5  

@@ -167,5 +167,5 @@ runs/
 temp/
 vis/
 vis_overlay/
-
+non_pub/
 *.pt

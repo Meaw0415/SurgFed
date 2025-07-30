@@ -1,7 +1,0 @@
-# CUDA_VISIBLE_DEVICES=0 python train_fl.py     -net sam2 -exp_name vis/FedAvg -sam_ckpt ./checkpoints/sam2_hiera_small.pt  -sam_config sam2_hiera_s_dep -image_size 512 -val_freq 1 -prompt bbox -prompt_freq 2 -Layers both -num_nets 5
-# CUDA_VISIBLE_DEVICES=0 python train_fl.py     -net sam2 -exp_name vis/FedRep -sam_ckpt ./checkpoints/sam2_hiera_small.pt  -sam_config sam2_hiera_s_dep -image_size 512 -val_freq 1 -prompt bbox -prompt_freq 2 -Layers mem -num_nets 5 -local_epochs 3
-CUDA_VISIBLE_DEVICES=3 python train_matfl.py  -net sam2 -exp_name vis/MaTFL  -sam_ckpt ./checkpoints/sam2_hiera_small.pt  -sam_config sam2_hiera_s_dep -image_size 512 -val_freq 1 -prompt bbox -prompt_freq 2 -Layers both -num_nets 5
-CUDA_VISIBLE_DEVICES=1 python train_fedhca.py -net sam2 -exp_name vis/FedHCA -sam_ckpt ./checkpoints/sam2_hiera_small.pt  -sam_config sam2_hiera_s_dep -image_size 512 -val_freq 1 -prompt bbox -prompt_freq 2 -Layers both -num_nets 5 
-# CUDA_VISIBLE_DEVICES=7 python train_hnfl.py   -net sam2 -exp_name vis/ours   -sam_ckpt ./checkpoints/sam2_hiera_small.pt  -sam_config sam2_hiera_s_dep -image_size 512 -val_freq 1 -prompt bbox -prompt_freq 2 -Layers both -num_nets 5 -local_epochs 3
-
-# CUDA_VISIBLE_DEVICES=4 python final_vis.py -num_nets 5
