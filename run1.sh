@@ -1,0 +1,2 @@
+CUDA_VISIBLE_DEVICES=7 python train_fl.py -net sam2 -exp_name FedAvg_Decoder -sam_ckpt ./checkpoints/sam2_hiera_small.pt -sam_config sam2_hiera_s_dep -image_size 512 -val_freq 1 -prompt bbox -prompt_freq 2 -Layers sam -num_nets 5 -local_epochs 3
+CUDA_VISIBLE_DEVICES=7 python train_fl.py -net sam2 -exp_name FedRep -sam_ckpt ./checkpoints/sam2_hiera_small.pt -sam_config sam2_hiera_s_dep -image_size 512 -val_freq 1 -prompt bbox -prompt_freq 2 -Layers mem -num_nets 5 -local_epochs 3

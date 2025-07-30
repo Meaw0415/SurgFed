@@ -7,10 +7,11 @@
 from collections import OrderedDict
 
 import torch
-
+from torch import nn
 from tqdm import tqdm
 
 from sam2_train.modeling.sam2_base import NO_OBJ_SCORE, SAM2Base
+from sam2_train.modeling.sam2_base_depth import SAM2Base_depth
 from sam2_train.utils.misc import concat_points, fill_holes_in_mask_scores, load_video_frames, load_video_frames_from_data
 
 
@@ -435,6 +436,7 @@ class SAM2VideoPredictor(SAM2Base):
             bbox = torch.tensor(bbox, dtype=torch.float32)
         bbox_coords = bbox.reshape(-1, 2, 2)
         bbox_labels = torch.tensor([2, 3], dtype=torch.int)
+      
 
         out_frame_idx, out_obj_ids, out_mask_logits = self.train_add_new_points(
             inference_state=inference_state,
@@ -445,6 +447,7 @@ class SAM2VideoPredictor(SAM2Base):
             clear_old_points=clear_old_points,
             normalize_coords=normalize_coords,
         )
+
         return out_frame_idx, out_obj_ids, out_mask_logits
     
     # @torch.inference_mode()
@@ -1437,3 +1440,18 @@ class SAM2VideoPredictor(SAM2Base):
             non_cond_frame_outputs.pop(t, None)
             for obj_output_dict in inference_state["output_dict_per_obj"].values():
                 obj_output_dict["non_cond_frame_outputs"].pop(t, None)
+
+
+
+class DepthEstimationHead(nn.Module):
+    def __init__(self, in_channels, out_channels=1):
+        super(DepthEstimationHead, self).__init__()
+        self.conv1 = nn.Conv2d(in_channels, 256, kernel_size=3, padding=1)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = nn.Conv2d(256, out_channels, kernel_size=1)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.relu(x)
+        x = self.conv2(x)
+        return x

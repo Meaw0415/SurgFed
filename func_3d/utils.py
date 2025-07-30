@@ -19,17 +19,28 @@ import cfg
 args = cfg.parse_args()
 device = torch.device('cuda', args.gpu_device)
 
-def get_network(args, net, use_gpu=True, gpu_device = 0, distribution = True):
+def get_network(args, net, use_gpu=True, gpu_device = 0, distribution = True, if_depth = False, client_idx = -1):
     """ return given network
     """
 
     if net == 'sam2':
-        from sam2_train.build_sam import build_sam2_video_predictor
+        if if_depth:
+            from sam2_train.build_sam import build_sam2_depth_predictor
+            sam2_checkpoint = args.sam_ckpt
+            if client_idx >= 0:
+                model_cfg = f'sam2_hiera_s_dep{client_idx}'
+            else:
+                model_cfg = 'sam2_hiera_s_dep'
+            net = build_sam2_depth_predictor(config_file=model_cfg, ckpt_path=sam2_checkpoint, mode=None)
+        else:
+            from sam2_train.build_sam import build_sam2_video_predictor
+            sam2_checkpoint = args.sam_ckpt
+            if client_idx >= 0:
+                model_cfg = f'sam2_hiera_s{client_idx}'
+            else:
+                model_cfg = 'sam2_hiera_s'
+            net = build_sam2_video_predictor(config_file=model_cfg, ckpt_path=sam2_checkpoint, mode=None)
 
-        sam2_checkpoint = args.sam_ckpt
-        model_cfg = args.sam_config
-
-        net = build_sam2_video_predictor(config_file=model_cfg, ckpt_path=sam2_checkpoint, mode=None)
     else:
         print('the network name you have entered is not supported yet')
         sys.exit()

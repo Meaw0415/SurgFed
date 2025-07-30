@@ -164,4 +164,8 @@ cython_debug/
 data/
 logs/
 runs/
+temp/
+vis/
+vis_overlay/
+
 *.pt

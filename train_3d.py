@@ -14,6 +14,7 @@ from tensorboardX import SummaryWriter
 
 import cfg
 from func_3d import function
+from func_3d import function_depth
 from conf import settings
 from func_3d.utils import get_network, set_log_dir, create_logger
 from func_3d.dataset import get_dataloader
@@ -84,12 +85,14 @@ def main():
     best_acc = 0.0
     best_tol = 1e4
     best_dice = 0.0
-
+    
     for epoch in range(settings.EPOCH):
 
         # if epoch < 5:
         #     tol, (eiou, edice) = function.validation_sam(args, nice_test_loader, epoch, net, writer)
         #     logger.info(f'Total score: {tol}, IOU: {eiou}, DICE: {edice} || @ epoch {epoch}.')
+        #     exit()
+
         net.train()
         time_start = time.time()
         loss, prompt_loss, non_prompt_loss = function.train_sam(args, net, optimizer1, optimizer2, nice_train_loader, epoch)
@@ -102,7 +105,9 @@ def main():
             tol, (eiou, edice) = function.validation_sam(args, nice_test_loader, epoch, net, writer)
             
             logger.info(f'Total score: {tol}, IOU: {eiou}, DICE: {edice} || @ epoch {epoch}.')
-
+            # Save model to logs/exp_name/model
+            # torch.save(net.state_dict(), checkpoint_path.format(net=args.net, epoch=epoch, type='checkpoint'))
+            print(os.path.join(args.path_helper['ckpt_path']))
             torch.save({'model': net.state_dict()}, os.path.join(args.path_helper['ckpt_path'], 'latest_epoch.pth'))
 
     writer.close()

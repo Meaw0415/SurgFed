@@ -72,6 +72,7 @@ class BTCV(Dataset):
 
         for frame_index in range(starting_frame, starting_frame + video_length):
             img = Image.open(os.path.join(img_path, f'{frame_index + starting_frame_nonzero}.jpg')).convert('RGB')
+
             mask = data_seg_3d[..., frame_index]
             # mask = np.rot90(mask)
             obj_list = np.unique(mask[mask > 0])
@@ -88,10 +89,12 @@ class BTCV(Dataset):
                 # if self.transform_msk:
                 obj_mask = Image.fromarray(obj_mask)
                 obj_mask = obj_mask.resize(newsize)
+                # print(obj_mask.size)
                 obj_mask = torch.tensor(np.array(obj_mask)).unsqueeze(0).int()
+                
                     # obj_mask = self.transform_msk(obj_mask).int()
                 diff_obj_mask_dict[obj] = obj_mask
-
+                
                 if self.prompt == 'click':
                     diff_obj_point_label_dict[obj], diff_obj_pt_dict[obj] = random_click(np.array(obj_mask.squeeze(0)), point_label, seed=None)
                 if self.prompt == 'bbox':
@@ -111,7 +114,7 @@ class BTCV(Dataset):
                 pt_dict[frame_index - starting_frame] = diff_obj_pt_dict
                 point_label_dict[frame_index - starting_frame] = diff_obj_point_label_dict
 
-
+  
         image_meta_dict = {'filename_or_obj':name}
         if self.prompt == 'bbox':
             return {

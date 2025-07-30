@@ -14,8 +14,8 @@ def parse_args():
     parser.add_argument('-val_freq',type=int,default=5,help='interval between each validation')
     parser.add_argument('-gpu', type=bool, default=True, help='use gpu or not')
     parser.add_argument('-gpu_device', type=int, default=0, help='use which gpu')
-    parser.add_argument('-image_size', type=int, default=1024, help='image_size')
-    parser.add_argument('-out_size', type=int, default=1024, help='output_size')
+    parser.add_argument('-image_size', type=int, default=512, help='image_size')
+    parser.add_argument('-out_size', type=int, default=512, help='output_size')
     parser.add_argument('-distributed', default='none' ,type=str,help='multi GPU ids to use')
     parser.add_argument('-dataset', default='btcv' ,type=str,help='dataset name')
     parser.add_argument('-sam_ckpt', type=str, default=None , help='sam checkpoint address')
@@ -26,6 +26,12 @@ def parse_args():
     parser.add_argument('-weights', type=str, default = 0, help='the weights file you want to test')
     parser.add_argument('-multimask_output', type=int, default=1 , help='the number of masks output for multi-class segmentation')
     parser.add_argument('-memory_bank_size', type=int, default=16, help='sam 2d memory bank size')
+    parser.add_argument('-num_nets', type=int, default=6, help='number of clients')
+    parser.add_argument('-local_epochs', type=int, default=1, help='number of clients')
+    parser.add_argument('-com_rounds', type=int, default=100, help='number of clients')
+    parser.add_argument('-if_depth', type=bool, default=False, help='if use depth prediction')
+    parser.add_argument('-Task_specific', type=bool, default=False, help='The path of segmentation data')
+    parser.add_argument('-Layers', type=str, default='both', help='The path of segmentation data')
     parser.add_argument(
     '-data_path',
     type=str,

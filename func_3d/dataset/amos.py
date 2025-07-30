@@ -91,7 +91,7 @@ class AMOS(Dataset):
                 obj_mask = torch.tensor(np.array(obj_mask)).unsqueeze(0).int()
                     # obj_mask = self.transform_msk(obj_mask).int()
                 diff_obj_mask_dict[obj] = obj_mask
-
+                print(obj_mask.shape)
                 if self.prompt == 'click':
                     diff_obj_point_label_dict[obj], diff_obj_pt_dict[obj] = random_click(np.array(obj_mask.squeeze(0)), point_label, seed=None)
                 if self.prompt == 'bbox':

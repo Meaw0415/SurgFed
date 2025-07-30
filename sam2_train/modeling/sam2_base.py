@@ -5,11 +5,12 @@
 # LICENSE file in the root directory of this source tree.
 
 import torch
+import clip
 import torch.distributed
 import torch.nn.functional as F
 
 from torch.nn.init import trunc_normal_
-
+from torch import nn
 from sam2_train.modeling.sam.mask_decoder import MaskDecoder
 from sam2_train.modeling.sam.prompt_encoder import PromptEncoder
 from sam2_train.modeling.sam.transformer import TwoWayTransformer
@@ -17,6 +18,14 @@ from sam2_train.modeling.sam2_utils import get_1d_sine_pe, MLP, select_closest_c
 
 # a large negative value as a placeholder score for missing objects
 NO_OBJ_SCORE = -1024.0
+SITES_TEXT = [
+                'Dataset: StereoMIS. Task: Depth Estimation. Label: The distance of each pixel relative to the camera ',
+                'Dataset: SCARED. Task: Depth Estimation. Lbael: The distance of each pixel relative to the camera ',
+                'Dataset: Endovis2017. Task: Instrument Segmentation. Label: Shaft, Wrist, Clasper ',
+                'Dataset: Endovis2018. Task: Instrument Segmentation. Label: Shaft, Wrist, Clasper ',
+                'Dataset: AutoLaparo. Task: Instrument Segmentation. Label: Anatomy Uterus , Shaft and Manipulator of Grasping forceps, LigaSure, Dissecting grasping forceps and Electric hook',
+                # 'Dataset: cholecseg8k. Task: seg. ',
+]
 
 
 class SAM2Base(torch.nn.Module):
@@ -91,9 +100,11 @@ class SAM2Base(torch.nn.Module):
         # extra arguments used to construct the SAM mask decoder; if not None, it should be a dict of kwargs to be passed into `MaskDecoder` class.
         sam_mask_decoder_extra_args=None,
         compile_image_encoder: bool = False,
+        client_idx: int = -1,
     ):
         super().__init__()
 
+        
         # Part 1: the image backbone
         self.image_encoder = image_encoder
         # Use level 0, 1, 2 for high-res setting, or just level 2 for the default setting
@@ -175,6 +186,27 @@ class SAM2Base(torch.nn.Module):
         self.add_all_frames_to_correct_as_cond = add_all_frames_to_correct_as_cond
         self.max_cond_frames_in_attn = max_cond_frames_in_attn
 
+        # CLient idx 
+        self.client_idx = client_idx
+        if self.client_idx != -1:
+            print(f"Client idx: {self.client_idx}")
+            model_clip, _ = clip.load("ViT-B/32", device='cuda')
+
+            self.site_embedding_layers = nn.Sequential(
+            nn.Conv2d(in_channels=512, out_channels=self.sam_prompt_embed_dim, kernel_size=1, bias=False),
+            nn.ReLU(),
+            nn.Conv2d(in_channels=self.sam_prompt_embed_dim, out_channels=self.sam_prompt_embed_dim, kernel_size=1, bias=False)
+        )
+            self.site_gating = nn.Sequential(
+                nn.Conv2d(in_channels=self.sam_prompt_embed_dim * 2, out_channels=self.sam_prompt_embed_dim, kernel_size=1),
+                nn.Sigmoid()
+            )
+
+            text_site = SITES_TEXT[self.client_idx]
+            text_site = clip.tokenize(text_site).to('cuda')
+            with torch.no_grad():
+                self.site_embedding = model_clip.encode_text(text_site).view(1, -1, 1, 1).to('cuda')
+            del model_clip
         # Model compilation
         if compile_image_encoder:
             # Compile the forward function (not the full module) to allow loading checkpoints.
@@ -300,6 +332,20 @@ class SAM2Base(torch.nn.Module):
         assert backbone_features.size(1) == self.sam_prompt_embed_dim
         assert backbone_features.size(2) == self.sam_image_embedding_size
         assert backbone_features.size(3) == self.sam_image_embedding_size
+        
+        if self.client_idx != -1:
+            site_embedding = self.site_embedding.view(1, -1, 1, 1).expand(B, -1, self.sam_image_embedding_size, self.sam_image_embedding_size)
+            site_embedding = site_embedding.to(backbone_features.dtype)
+            site_embedding = self.site_embedding_layers(site_embedding)
+
+            channel_descriptor = torch.mean(backbone_features, dim=(2, 3), keepdim=True)
+            site_embedding = torch.mean(site_embedding, dim=(2, 3), keepdim=True)
+
+            enhanced_features = torch.cat([channel_descriptor, site_embedding], dim=1)
+
+            gating = self.site_gating(enhanced_features)
+
+            backbone_features = gating * site_embedding + backbone_features
 
         # a) Handle point prompts
         if point_inputs is not None:

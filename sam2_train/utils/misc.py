@@ -250,11 +250,11 @@ def fill_holes_in_mask_scores(mask, max_area):
     """
     # Holes are those connected components in background with area <= self.max_area
     # (background regions are those with mask scores <= 0)
-    assert max_area > 0, "max_area must be positive"
-    labels, areas = get_connected_components(mask <= 0)
-    is_hole = (labels > 0) & (areas <= max_area)
-    # We fill holes with a small positive mask score (0.1) to change them to foreground.
-    mask = torch.where(is_hole, 0.1, mask)
+    # assert max_area > 0, "max_area must be positive"
+    # labels, areas = get_connected_components(mask <= 0)
+    # is_hole = (labels > 0) & (areas <= max_area)
+    # # We fill holes with a small positive mask score (0.1) to change them to foreground.
+    # mask = torch.where(is_hole, 0.1, mask)
     return mask
 
 
