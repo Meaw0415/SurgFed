@@ -58,6 +58,8 @@ SITES_TEXT = [
                 # 'Dataset: cholecseg8k. Task: seg. ',
 ]
 
+
+
 def main():
 
     args = cfg.parse_args()
@@ -114,6 +116,7 @@ def main():
     hyper.to(dtype=torch.bfloat16)
     hyper.to(GPUdevice)
     hyper_optimizer = optim.Adam(hyper.parameters(), lr=1e-3, betas=(0.9, 0.999), eps=1e-08, weight_decay=0.99, amsgrad=False)
+
 
     torch.autocast(device_type="cuda", dtype=torch.bfloat16).__enter__()
 

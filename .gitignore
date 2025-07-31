@@ -169,3 +169,4 @@ vis/
 vis_overlay/
 non_pub/
 *.pt
+*.sh
